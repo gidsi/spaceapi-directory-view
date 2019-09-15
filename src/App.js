@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchDirectory } from './actions/directoryAction'
-import moment from 'moment';
+import { fetchDirectory } from './actions/directoryAction';
 import './App.css';
+import DirectoryList from "./components/DirectoryList";
 
 const mapStateToProps = state => ({
   ...state
@@ -11,40 +11,32 @@ const mapDispatchToProps = dispatch => ({
   fetchDirectory: (valid) => dispatch(fetchDirectory(valid))
 });
 
+const sortDirectory = (a, b) => {
+    if (a.space === undefined) {
+        return 0;
+    }
+
+    if (b.space === undefined) {
+        return 1;
+    }
+
+    return a.space.toLowerCase() >= b.space.toLowerCase() ? 1 : -1
+    // return a.url >= b.url ? 1 : -1
+}
+
 
 class App extends Component {
+    componentWillMount() {
+        this.props.fetchDirectory(true)
+        this.props.fetchDirectory(false)
+    }
 
-  simpleAction = (event) => {
-    this.props.simpleAction();
-  };
-
-  getListElement = (item) => (
-      <div>
-          <div key={item.url} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: item.valid ? 'green' : 'red', width: '100%'}}>
-              <div>
-                  {item.space}
-              </div>
-              <div>
-                  {item.url}
-              </div>
-              <div>
-                  {item.lastSeen !== undefined ? moment.unix(item.lastSeen).utc().fromNow() : 'unknown'}
-              </div>
-          </div>
-          <div>
-              {item.errMsg}
-          </div>
-      </div>
-  )
-
-  render() {
-    const foo = this.props.directoryReducer.items.valid.concat(this.props.directoryReducer.items.invalid).sort((a,b) => a.url > b.url ? 1 : -1);
+    render() {
+    const foo = this.props.directoryReducer.items.valid.concat(this.props.directoryReducer.items.invalid).sort(sortDirectory);
 
     return (
         <div className="App">
-          <button onClick={() => this.props.fetchDirectory(true)}>Valid</button>
-          <button onClick={() => this.props.fetchDirectory(false)}>Invalid</button>
-            {foo.map(this.getListElement)}
+          <DirectoryList items={foo}/>
         </div>
     );
   }
